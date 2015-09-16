@@ -1,7 +1,9 @@
 /* jshint asi: true, laxcomma: true */
+var _               = require("lodash")
 var gulp            = require("gulp")
 
 var gMods = require("./gulp-autoload")
+
 
 var jadeConf = {
     pretty: true
@@ -10,6 +12,7 @@ var jadeConf = {
 var stylusConf = {
 
 }
+
 
 gulp.task("default", ["layout", "style", "vendor", "watch", "serve"])
 
@@ -23,7 +26,12 @@ gulp.task("serve", function () {
 
 gulp.task("layout", function () {
     gulp.src("src/layout/**/*.jade")
-        //.pipe(gMods["gulp-filter"](function () {}))
+        .pipe(gMods["gulp-filter"](["**/*", "!base.jade", "!components/**/*.jade"]))
+        .pipe(gMods["gulp-data"](function (file) {
+            var siteConfig = require("./src/config.js")()
+            console.log(siteConfig)
+            return siteConfig
+        }))
         .pipe(gMods["gulp-jade"](jadeConf))
         .pipe(gMods["gulp-chmod"](664))
         .pipe(gulp.dest("dist/"))
@@ -70,6 +78,7 @@ gulp.task("reload", function () {
 })
 
 gulp.task("watch", function () {
+    gulp.watch("src/config.js", ["layout"])
     gulp.watch("src/layout/**/*.jade", ["layout"])
     gulp.watch("src/style/**/*.styl", ["style"])
     gulp.watch("vendor/**/*", ["vendor"])
